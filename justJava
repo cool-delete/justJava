@@ -1,0 +1,171 @@
+package com.justJava;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.StreamTokenizer;
+import java.util.Arrays;
+
+/**
+ * Created by Administrator on 2016/4/2.
+ */
+public class Main {
+    private static node[] init() throws IOException {
+        StreamTokenizer s = new StreamTokenizer(new BufferedReader(new InputStreamReader(System.in)));
+        PrintWriter out = new PrintWriter(new OutputStreamWriter(System.out));
+        int oneN = 0;
+        try {
+            s.nextToken();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        oneN = (int) s.nval;
+        node[] ss = new node[oneN];
+        for (int i = 0; i < ss.length; i++) {
+
+            s.nextToken();
+            if (s.nval == (0d)) {
+                ss[i] = new node(0, 0);
+            } else {
+
+                int i1 = (int) s.nval;
+                s.nextToken();
+                int i2 = (int) s.nval;
+                ss[i] = new node(i1, i2);
+            }
+        }
+        return ss;
+    }
+
+    public static void main(String args[]) throws IOException {
+
+        /***
+         * 输入样例:
+
+         4 3 4 -5 2 6 1 -2 0
+         3 5 20  -7 4  3 1
+         输出样例:
+
+         15 24 -25 22 30 21 -10 20 -21 8 35 6 -33 5 14 4 -15 3 18 2 -6 1
+         5 20 -4 4 -5 2 9 1 -2 0
+         */
+
+        node[] a = init();
+        node[] q = init();
+        node[] nodes = multiplication(a.clone(), q.clone());
+        node[] b = sum(a.clone(), q.clone());
+        int k = 0;
+        for (node o : nodes) {
+            if (o.mi != -1) {
+                if (k == 0) {
+                    k = 1;
+                } else System.out.print(" ");
+                System.out.print(o.xi + " " + o.mi);
+            }
+        }
+        System.out.println("");
+
+        k = 0;
+        for (node c : b) {
+            if (c.mi != -1) {
+                if (k == 0) {
+                    k = 1;
+                } else System.out.print(" ");
+                System.out.print(
+                        c.xi + " " + c.mi);
+            }
+        }
+    }
+
+    /**
+     * 元素相乘
+     * <p>
+     * 幂数想加
+     * 系数相乘
+     */
+    private static node[] multiplication(node[] f, node[] fir) {
+        node[] nodes = new node[f.length * fir.length];
+        int j = 0;
+        for (node a : f) {
+            for (node b : fir) {
+                nodes[j] = new node(a.xi * b.xi, a.mi + b.mi);
+                j++;
+            }
+        }
+        //排序
+        fromBigToSmallOrder(nodes);
+
+        return nodes;
+    }
+
+    static boolean ok = false;
+
+    private static synchronized node[] fromBigToSmallOrder(node[] nodes) {
+        //排序
+        Arrays.sort(nodes);
+        //合并同类型
+        ok = false;
+        for (int i = 1; i < nodes.length; i++) {
+            if (nodes[i].mi > 0 || nodes[i].xi != 0) {
+                if (nodes[i].xi == -1 && nodes[i].mi == -1) continue;
+                if (nodes[i].mi == nodes[i - 1].mi) {
+                    nodes[i] = new node(nodes[i].xi + nodes[i - 1].xi == 0 ? -1 : nodes[i].xi + nodes[i - 1].xi, nodes[i].xi + nodes[i - 1].xi == 0 ? -1 : nodes[i].mi);
+                    nodes[i - 1] = new node(-1, -1);
+                }
+            }
+        }
+        Arrays.sort(nodes);
+        for (int c = 0; c < nodes.length - 1; c++) {
+            if (nodes[c].mi > 0 || nodes[c].xi != 0) {
+
+                if (nodes[c].xi + nodes[c + 1].xi == 0 && nodes[c].mi == nodes[c + 1].mi) {
+                    ok = true;
+                    return fromBigToSmallOrder(nodes);
+                } else ok = false;
+            }
+        }
+
+        if (!ok) {
+            return nodes;
+        } else return nodes;
+
+    }
+
+    private static node[] sum(node[] f, node[] fir) {
+        //新建数组
+        node[] a = new node[f.length + fir.length];
+        //把两个数组合并复制到新的数组里面
+        System.arraycopy(f, 0, a, 0, f.length);
+        System.arraycopy(fir, 0, a, f.length, fir.length);
+        //排序剔除重复项
+        fromBigToSmallOrder(a);
+        return a;
+    }
+
+
+    private static class node implements Comparable<node> {
+        int xi;
+        int mi;
+
+        public node(int xi, int mi) {
+            this.xi = xi;
+            this.mi = mi;
+        }
+
+
+        @Override
+        public int compareTo(node o) {
+            if (o.mi == -1) return 0;
+            return o.mi - this.mi;
+        }
+
+
+        @Override
+        public String toString() {
+            return xi + " " + mi;
+        }
+
+    }
+}
